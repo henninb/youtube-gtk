@@ -63,7 +63,8 @@ type YoutubeNewSchema = [schema|
       title: Text,
       resourceId: {
         videoId: Text
-      }
+      },
+      videoOwnerChannelTitle: Text
     }
   }
   }
@@ -144,20 +145,26 @@ dropNonLetters xs = (filter (\x -> isLower x || isSpace x || x == '-')) $ spaceT
 -- spaceToDash :: [Char] -> [Char]
 -- spaceToDash = map (\x -> if isSpace x then '-' else x)
 
-toCsv :: (T.Text, T.Text, T.Text) -> [Char]
-toCsv (x,y,z) = "" ++ unpack(y) ++ "," ++ dropNonLetters (unpack(x)) ++ "," ++ unpack(z) ++ "\n"
+toCsv :: (T.Text, T.Text, T.Text, T.Text) -> [Char]
+toCsv (x,y,z, zz) = dropNonLetters(unpack(zz)) ++ "," ++ unpack(y) ++ "," ++ dropNonLetters (unpack(x)) ++ "," ++ unpack(z) ++ "\n"
 
+perChannel :: String -> IO [Char]
 perChannel channelId = do
   videos <- getYoutubeNewApi channelId
 
   let l1 = [Data.Aeson.Schema.get| videos.items[].snippet.title |]
   let l2 = [Data.Aeson.Schema.get| videos.items[].snippet.publishedAt |]
   let l3 = [Data.Aeson.Schema.get| videos.items[].snippet.resourceId.videoId |]
-  let tuple = [ (e1,e2,e3) | ((e1,e2),e3) <- zip (zip l1 l2) l3 ]
+  let l4 = [Data.Aeson.Schema.get| videos.items[].snippet.videoOwnerChannelTitle |]
+  let tuple = [ (e1,e2,e3,e4) | (((e1,e2),e3), e4) <- (zip (zip (zip l1 l2) l3) l4) ]
   -- putStrLn $ foldr (++) "" (map toCsv tuple)
   return ( foldr (++) "" (map toCsv tuple))
 
 
+f xs = do
+  x <- perChannel xs
+  -- print x
+  return (x)
 
 main :: IO ()
 main = do
@@ -232,12 +239,21 @@ main = do
   Gtk.onWidgetDestroy win Gtk.mainQuit
   #showAll win
 
+-- #UCQN2DsjnYH60SFBIA6IkNwg
+  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g"]
   myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
-  myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg"
+  myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg" --
   myData2 <- perChannel "UCMIqrmh2lMdzhlCPK5ahsAg" --darknet diaries
   myData3 <- perChannel "UCc-0YpRpqgA5lPTpSQ5uo-Q" --audit the audit
+  myData4 <- perChannel "UCcUf33cEPky2GiWBgOP-jQA" --coffeehouse crime
+  myData5 <- perChannel "UCt3JiNkefsfbA2N4SgEkoiQ" --
+  myData6 <- perChannel "UC3xdLFFsqG701QAyGJIPT1g"
 
-  let myData = myData0 ++ myData1 ++ myData2 ++ myData3
+  let myData = myData0 ++ myData1 ++ myData2 ++ myData3 ++ myData4 ++ myData5
+
+  x <- mapM_ f myDataList
+  print x
+
 
   Gtk.textBufferSetText textBuffer (pack( myData)) (-1)
   Gtk.main
