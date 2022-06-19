@@ -142,9 +142,6 @@ dropNonLetters xs = (filter (\x -> isLower x || isSpace x || x == '-')) $ spaceT
   where
     spaceToDash = map (\x -> if isSpace x then '-' else x)
 
--- spaceToDash :: [Char] -> [Char]
--- spaceToDash = map (\x -> if isSpace x then '-' else x)
-
 toCsv :: (T.Text, T.Text, T.Text, T.Text) -> [Char]
 toCsv (x,y,z, zz) = dropNonLetters(unpack(zz)) ++ "," ++ unpack(y) ++ "," ++ dropNonLetters (unpack(x)) ++ "," ++ unpack(z) ++ "\n"
 
@@ -248,8 +245,11 @@ main = do
   myData4 <- perChannel "UCcUf33cEPky2GiWBgOP-jQA" --coffeehouse crime
   myData5 <- perChannel "UCt3JiNkefsfbA2N4SgEkoiQ" --
   myData6 <- perChannel "UC3xdLFFsqG701QAyGJIPT1g"
+  myData7 <- perChannel "UC2cC48A261pBVKztLyzOAnA"
+  myData8 <- perChannel "UCQV6O5wfETMrWqQ7Ro9r-0g"
+  myData9 <- perChannel "UCld68syR8Wi-GY_n4CaoJGA"
 
-  let myData = myData0 ++ myData1 ++ myData2 ++ myData3 ++ myData4 ++ myData5
+  let myData = myData0 ++ myData1 ++ myData2 ++ myData3 ++ myData4 ++ myData5 ++ myData6 ++ myData7 ++ myData8 ++ myData9
 
   x <- mapM_ f myDataList
   print x
