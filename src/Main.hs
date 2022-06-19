@@ -78,8 +78,8 @@ fromIntJust :: Maybe Int -> Int
 fromIntJust (Just x) = x
 fromIntJust Nothing = 0
 
-channelId :: String
-channelId = "UCVls1GmFKf6WlTraIb_IaJg"
+-- channelId :: String
+-- channelId = "UCVls1GmFKf6WlTraIb_IaJg"
 
 youtubeApi :: String -> IO Value
 youtubeApi channelId = do
@@ -107,16 +107,16 @@ youtubeApiNew playlistId = do
 fromJSONValue :: FromJSON a => Value -> Maybe a
 fromJSONValue = parseMaybe parseJSON
 
-getYoutubeApi :: IO (Object YoutubeSchema)
-getYoutubeApi = do
+getYoutubeApi :: String -> IO (Object YoutubeSchema)
+getYoutubeApi channelId = do
   payload <- youtubeApi channelId
   let myPayload = Data.Aeson.encode payload
   output <- either fail return $ eitherDecode myPayload :: IO (Object YoutubeSchema)
   return (output)
 
-getYoutubeNewApi :: IO (Object YoutubeNewSchema)
-getYoutubeNewApi = do
-  json <- getYoutubeApi
+getYoutubeNewApi :: String -> IO (Object YoutubeNewSchema)
+getYoutubeNewApi channelId = do
+  json <- getYoutubeApi channelId
   let playlistId = unpack (head [Data.Aeson.Schema.get| json.items[].contentDetails.relatedPlaylists.uploads |])
   payload <- youtubeApiNew playlistId
   let myPayload = Data.Aeson.encode payload
@@ -146,6 +146,17 @@ dropNonLetters xs = (filter (\x -> isLower x || isSpace x || x == '-')) $ spaceT
 
 toCsv :: (T.Text, T.Text, T.Text) -> [Char]
 toCsv (x,y,z) = "" ++ unpack(y) ++ "," ++ dropNonLetters (unpack(x)) ++ "," ++ unpack(z) ++ "\n"
+
+perChannel channelId = do
+  videos <- getYoutubeNewApi channelId
+
+  let l1 = [Data.Aeson.Schema.get| videos.items[].snippet.title |]
+  let l2 = [Data.Aeson.Schema.get| videos.items[].snippet.publishedAt |]
+  let l3 = [Data.Aeson.Schema.get| videos.items[].snippet.resourceId.videoId |]
+  let tuple = [ (e1,e2,e3) | ((e1,e2),e3) <- zip (zip l1 l2) l3 ]
+  -- putStrLn $ foldr (++) "" (map toCsv tuple)
+  return ( foldr (++) "" (map toCsv tuple))
+
 
 
 main :: IO ()
@@ -221,14 +232,12 @@ main = do
   Gtk.onWidgetDestroy win Gtk.mainQuit
   #showAll win
 
-  videos <- getYoutubeNewApi
+  myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
+  myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg"
+  myData2 <- perChannel "UCMIqrmh2lMdzhlCPK5ahsAg" --darknet diaries
+  myData3 <- perChannel "UCc-0YpRpqgA5lPTpSQ5uo-Q" --audit the audit
 
-  let l1 = [Data.Aeson.Schema.get| videos.items[].snippet.title |]
-  let l2 = [Data.Aeson.Schema.get| videos.items[].snippet.publishedAt |]
-  let l3 = [Data.Aeson.Schema.get| videos.items[].snippet.resourceId.videoId |]
-  let tuple = [ (e1,e2,e3) | ((e1,e2),e3) <- zip (zip l1 l2) l3 ]
-  -- putStrLn $ foldr (++) "" (map toCsv tuple)
-  let myData = foldr (++) "" (map toCsv tuple)
+  let myData = myData0 ++ myData1 ++ myData2 ++ myData3
 
   Gtk.textBufferSetText textBuffer (pack( myData)) (-1)
   Gtk.main
