@@ -227,7 +227,7 @@ main = do
   #attach grid btn1 0 0 1 1
   #attach grid label1 0 1 1 1
   #attach grid box 0 2 1 1
-  #attach grid lonLat 0 3 1 1
+  -- #attach grid lonLat 0 3 1 1
 
   #add win grid
 
@@ -235,8 +235,7 @@ main = do
   #showAll win
 
 -- #UCQN2DsjnYH60SFBIA6IkNwg
-  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA", "UChIvZnHiO8jsHTR-rkwxkHg"]
-
+  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA", "UCmFeOdJI3IXgTBDzqBLD8qg"]
 
   -- myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
   -- myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg" --
