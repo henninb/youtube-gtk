@@ -80,10 +80,7 @@ fromIntJust :: Maybe Int -> Int
 fromIntJust (Just x) = x
 fromIntJust Nothing = 0
 
--- channelId :: String
--- channelId = "UCVls1GmFKf6WlTraIb_IaJg"
-
-youtubeApi :: String -> IO Value
+youtubeApi :: String  -> IO Value
 youtubeApi channelId = do
   youtubeApiKey <- catch (getEnv "YOUTUBE_API_KEY") (const $ pure "none" :: IOException -> IO String)
   response <- runReq defaultHttpConfig $ req
@@ -93,15 +90,15 @@ youtubeApi channelId = do
     "part" =: ("contentDetails" :: String)
   return (responseBody response)
 
-youtubeApiNew :: String -> IO Value
-youtubeApiNew playlistId = do
+youtubeApiNew :: String -> String -> IO Value
+youtubeApiNew playlistId count = do
   youtubeApiKey <- catch (getEnv "YOUTUBE_API_KEY") (const $ pure "none" :: IOException -> IO String)
   response <- runReq defaultHttpConfig $ req
     GET (https "www.googleapis.com" /: "youtube" /: "v3" /: "playlistItems") NoReqBody jsonResponse $
     "playlistId" =: (playlistId :: String) <>
     "key" =: (youtubeApiKey :: String) <>
     "part" =: ("snippet" :: String) <>
-    "maxResults" =: ("7" :: String) <>
+    "maxResults" =: (count :: String) <>
     "order" =: ("date" :: String)
   return (responseBody response)
 
@@ -116,11 +113,11 @@ getYoutubeApi channelId = do
   output <- either fail return $ eitherDecode myPayload :: IO (Object YoutubeSchema)
   return (output)
 
-getYoutubeNewApi :: String -> IO (Object YoutubeNewSchema)
-getYoutubeNewApi channelId = do
+getYoutubeNewApi :: String -> String -> IO (Object YoutubeNewSchema)
+getYoutubeNewApi channelId count = do
   json <- getYoutubeApi channelId
   let playlistId = unpack (head [Data.Aeson.Schema.get| json.items[].contentDetails.relatedPlaylists.uploads |])
-  payload <- youtubeApiNew playlistId
+  payload <- youtubeApiNew playlistId count
   let myPayload = Data.Aeson.encode payload
   output <- either fail return $ eitherDecode myPayload :: IO (Object YoutubeNewSchema)
   return (output)
@@ -148,7 +145,7 @@ toCsv (x,y,z, zz) = dropNonLetters(unpack(zz)) ++ "," ++ unpack(y) ++ "," ++ dro
 
 perChannel :: String -> IO [Char]
 perChannel channelId = do
-  videos <- getYoutubeNewApi channelId
+  videos <- getYoutubeNewApi channelId "3"
 
   let l1 = [Data.Aeson.Schema.get| videos.items[].snippet.title |]
   let l2 = [Data.Aeson.Schema.get| videos.items[].snippet.publishedAt |]
@@ -238,7 +235,7 @@ main = do
   #showAll win
 
 -- #UCQN2DsjnYH60SFBIA6IkNwg
-  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UC2cC48A261pBVKztLyzOAnA", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA"]
+  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA", "UChIvZnHiO8jsHTR-rkwxkHg"]
 
 
   -- myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
