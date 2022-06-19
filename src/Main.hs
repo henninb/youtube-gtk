@@ -40,6 +40,7 @@ import Data.Time.Format
 
 import Control.Exception (IOException, catch)
 import System.Environment (getEnv)
+import Data.List
 
 
 type YoutubeSchema = [schema|
@@ -237,23 +238,23 @@ main = do
   #showAll win
 
 -- #UCQN2DsjnYH60SFBIA6IkNwg
-  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g"]
-  myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
-  myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg" --
-  myData2 <- perChannel "UCMIqrmh2lMdzhlCPK5ahsAg" --darknet diaries
-  myData3 <- perChannel "UCc-0YpRpqgA5lPTpSQ5uo-Q" --audit the audit
-  myData4 <- perChannel "UCcUf33cEPky2GiWBgOP-jQA" --coffeehouse crime
-  myData5 <- perChannel "UCt3JiNkefsfbA2N4SgEkoiQ" --
-  myData6 <- perChannel "UC3xdLFFsqG701QAyGJIPT1g"
-  myData7 <- perChannel "UC2cC48A261pBVKztLyzOAnA"
-  myData8 <- perChannel "UCQV6O5wfETMrWqQ7Ro9r-0g"
-  myData9 <- perChannel "UCld68syR8Wi-GY_n4CaoJGA"
-
-  let myData = myData0 ++ myData1 ++ myData2 ++ myData3 ++ myData4 ++ myData5 ++ myData6 ++ myData7 ++ myData8 ++ myData9
-
-  x <- mapM_ f myDataList
-  print x
+  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UC2cC48A261pBVKztLyzOAnA", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA"]
 
 
-  Gtk.textBufferSetText textBuffer (pack( myData)) (-1)
+  -- myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
+  -- myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg" --
+  -- myData2 <- perChannel "UCMIqrmh2lMdzhlCPK5ahsAg" --darknet diaries
+  -- myData3 <- perChannel "UCc-0YpRpqgA5lPTpSQ5uo-Q" --audit the audit
+  -- myData4 <- perChannel "UCcUf33cEPky2GiWBgOP-jQA" --coffeehouse crime
+  -- myData5 <- perChannel "UCt3JiNkefsfbA2N4SgEkoiQ" --
+  -- myData6 <- perChannel "UC3xdLFFsqG701QAyGJIPT1g"
+  -- myData7 <- perChannel "UC2cC48A261pBVKztLyzOAnA"
+  -- myData8 <- perChannel "UCQV6O5wfETMrWqQ7Ro9r-0g"
+  -- myData9 <- perChannel "UCld68syR8Wi-GY_n4CaoJGA"
+
+
+  output <- mapM f myDataList
+
+
+  Gtk.textBufferSetText textBuffer (pack( concat output)) (-1)
   Gtk.main
