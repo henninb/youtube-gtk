@@ -235,7 +235,7 @@ main = do
   #showAll win
 
 -- #UCQN2DsjnYH60SFBIA6IkNwg
-  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA", "UCmFeOdJI3IXgTBDzqBLD8qg"]
+  let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA", "UCmFeOdJI3IXgTBDzqBLD8qg", "UCoECpBOAHmQiV7OfV5SxkPA"]
 
   -- myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
   -- myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg" --
