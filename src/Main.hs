@@ -14,34 +14,25 @@ import qualified GI.Gtk as Gtk
 import qualified GI.Gdk as GDK
 import System.Directory (getHomeDirectory)
 import System.Posix.User (getEffectiveUserName)
-import Data.Char (chr)
 import Data.Aeson (eitherDecode, encode, eitherDecodeStrict)
 import Data.Aeson.Types (ToJSON, FromJSON, Value, parseJSON, parseMaybe)
 import GHC.Generics (Generic)
 import Data.String ( fromString )
-import Data.Char (toLower, isLower, isSpace)
+import Data.Char (toLower, isLower, isSpace, chr)
 -- import Network.HTTP.Req (JsonResponse, jsonResponse, responseBody, (/:), defaultHttpConfig, (=:), https, runReq, req, NoReqBody, GET)
 import Network.HTTP.Req
 import qualified Data.ByteString.Lazy.UTF8 as BLU -- from utf8-string
 import qualified Data.ByteString.Lazy as BL
-
-import Data.Text.Encoding
-import qualified Data.Text as T
+import qualified Data.Text as T (Text(..))
 import Data.Text (pack, unpack)
 import Text.JSON.Generic (Typeable)
--- import qualified Data.Aeson.Schema as DAS
 import Data.Aeson.Schema (schema, Object, get)
 import Data.Aeson.Casing.Internal (snakeCase)
 import Data.Typeable (typeOf)
-
 import Data.Aeson.Casing (aesonPrefix, pascalCase)
 import Data.Time (getCurrentTime)
-import Data.Time.Format
-
 import Control.Exception (IOException, catch)
 import System.Environment (getEnv)
-import Data.List
-
 
 type YoutubeSchema = [schema|
   {
@@ -110,8 +101,7 @@ getYoutubeApi :: String -> IO (Object YoutubeSchema)
 getYoutubeApi channelId = do
   payload <- youtubeApi channelId
   let myPayload = Data.Aeson.encode payload
-  output <- either fail return $ eitherDecode myPayload :: IO (Object YoutubeSchema)
-  return (output)
+  either fail return $ eitherDecode myPayload :: IO (Object YoutubeSchema)
 
 getYoutubeNewApi :: String -> String -> IO (Object YoutubeNewSchema)
 getYoutubeNewApi channelId count = do
@@ -119,8 +109,7 @@ getYoutubeNewApi channelId count = do
   let playlistId = unpack (head [Data.Aeson.Schema.get| json.items[].contentDetails.relatedPlaylists.uploads |])
   payload <- youtubeApiNew playlistId count
   let myPayload = Data.Aeson.encode payload
-  output <- either fail return $ eitherDecode myPayload :: IO (Object YoutubeNewSchema)
-  return (output)
+  either fail return $ eitherDecode myPayload :: IO (Object YoutubeNewSchema)
 
 -- styles :: Data.ByteString.Internal.ByteString
 styles = mconcat
@@ -132,18 +121,17 @@ textViewGetValue tv = do
     buf <- Gtk.textViewGetBuffer tv
     start <- Gtk.textBufferGetStartIter buf
     end <- Gtk.textBufferGetEndIter buf
-    value <- Gtk.textBufferGetText buf start end True
-    return value
+    Gtk.textBufferGetText buf start end True
 
 dropNonLetters :: [Char] -> [Char]
-dropNonLetters xs = (filter (\x -> isLower x || isSpace x || x == '-')) $ spaceToDash(map toLower xs)
+dropNonLetters xs = filter (\x -> isLower x || isSpace x || x == '-') $ spaceToDash(map toLower xs)
   where
     spaceToDash = map (\x -> if isSpace x then '-' else x)
 
-toCsv :: (T.Text, T.Text, T.Text, T.Text) -> [Char]
-toCsv (x,y,z, zz) = dropNonLetters(unpack(zz)) ++ "," ++ unpack(y) ++ "," ++ dropNonLetters (unpack(x)) ++ "," ++ unpack(z) ++ "\n"
+toCsv :: (T.Text, T.Text, T.Text, T.Text) -> String
+toCsv (x,y,z, zz) = dropNonLetters(unpack zz) ++ "," ++ unpack y ++ "," ++ dropNonLetters (unpack x) ++ "," ++ unpack z ++ "\n"
 
-perChannel :: String -> IO [Char]
+perChannel :: String -> IO String
 perChannel channelId = do
   videos <- getYoutubeNewApi channelId "3"
 
@@ -151,15 +139,13 @@ perChannel channelId = do
   let l2 = [Data.Aeson.Schema.get| videos.items[].snippet.publishedAt |]
   let l3 = [Data.Aeson.Schema.get| videos.items[].snippet.resourceId.videoId |]
   let l4 = [Data.Aeson.Schema.get| videos.items[].snippet.videoOwnerChannelTitle |]
-  let tuple = [ (e1,e2,e3,e4) | (((e1,e2),e3), e4) <- (zip (zip (zip l1 l2) l3) l4) ]
-  -- putStrLn $ foldr (++) "" (map toCsv tuple)
-  return ( foldr (++) "" (map toCsv tuple))
+  let tuple = [(e1, e2, e3, e4) | (((e1, e2), e3), e4) <- zip (zip (zip l1 l2) l3) l4]
+  return (concatMap toCsv tuple)
 
 
-f xs = do
-  x <- perChannel xs
+f xs = do perChannel xs
   -- print x
-  return (x)
+  -- return x
 
 main :: IO ()
 main = do
@@ -191,7 +177,7 @@ main = do
   lonLat <- Gtk.textViewNew
   Gtk.textViewSetEditable lonLat True
   textBufferLonLat <- Gtk.getTextViewBuffer lonLat
-  Gtk.textBufferSetText textBufferLonLat (( "45.18,-93.32")) (-1)
+  Gtk.textBufferSetText textBufferLonLat "45.18,-93.32" (-1)
 
   data1 <- textViewGetValue lonLat
   print data1
