@@ -6,12 +6,13 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Main where
 
-import Data.GI.Base
+import Data.GI.Base (get, on)
 import qualified GI.Gtk as Gtk
-import qualified GI.Gdk as GDK
+import GI.Gdk (screenGetDefault, keyvalToUnicode)
 import System.Directory (getHomeDirectory)
 import System.Posix.User (getEffectiveUserName)
 import Data.Aeson (eitherDecode, encode, eitherDecodeStrict)
@@ -19,11 +20,8 @@ import Data.Aeson.Types (ToJSON, FromJSON, Value, parseJSON, parseMaybe)
 import GHC.Generics (Generic)
 import Data.String ( fromString )
 import Data.Char (toLower, isLower, isSpace, chr)
--- import Network.HTTP.Req (JsonResponse, jsonResponse, responseBody, (/:), defaultHttpConfig, (=:), https, runReq, req, NoReqBody, GET)
-import Network.HTTP.Req
-import qualified Data.ByteString.Lazy.UTF8 as BLU -- from utf8-string
-import qualified Data.ByteString.Lazy as BL
-import qualified Data.Text as T (Text(..))
+import Network.HTTP.Req (JsonResponse, jsonResponse, responseBody, (/:), defaultHttpConfig, (=:), https, runReq, req, pattern NoReqBody, pattern GET)
+import Data.Text (Text)
 import Data.Text (pack, unpack)
 import Text.JSON.Generic (Typeable)
 import Data.Aeson.Schema (schema, Object, get)
@@ -128,7 +126,7 @@ dropNonLetters xs = filter (\x -> isLower x || isSpace x || x == '-') $ spaceToD
   where
     spaceToDash = map (\x -> if isSpace x then '-' else x)
 
-toCsv :: (T.Text, T.Text, T.Text, T.Text) -> String
+toCsv :: (Text, Text, Text, Text) -> String
 toCsv (x,y,z, zz) = dropNonLetters(unpack zz) ++ "," ++ unpack y ++ "," ++ dropNonLetters (unpack x) ++ "," ++ unpack z ++ "\n"
 
 perChannel :: String -> IO String
@@ -143,9 +141,8 @@ perChannel channelId = do
   return (concatMap toCsv tuple)
 
 
+f :: String -> IO String
 f xs = do perChannel xs
-  -- print x
-  -- return x
 
 main :: IO ()
 main = do
@@ -163,7 +160,7 @@ main = do
   Gtk.setWindowWindowPosition win Gtk.WindowPositionCenter
   Gtk.windowSetDecorated win False
 
-  screen <- maybe (fail "No screen?!") return =<< GDK.screenGetDefault
+  screen <- maybe (fail "No screen?!") return =<< screenGetDefault
   css <- Gtk.cssProviderNew
   Gtk.cssProviderLoadFromData css styles
   Gtk.styleContextAddProviderForScreen screen css (fromIntegral Gtk.STYLE_PROVIDER_PRIORITY_USER)
@@ -200,7 +197,7 @@ main = do
     Gtk.widgetDestroy win
 
   on win #keyPressEvent $ \keyEvent -> do
-    key <- keyEvent `Data.GI.Base.get` #keyval >>= GDK.keyvalToUnicode
+    key <- keyEvent `Data.GI.Base.get` #keyval >>= keyvalToUnicode
     putStrLn $ "Key pressed: (" ++ show key ++ ")"
     if key == 27 then Gtk.mainQuit else pure ()
     return False
@@ -223,20 +220,7 @@ main = do
 -- #UCQN2DsjnYH60SFBIA6IkNwg
   let myDataList = ["UCVls1GmFKf6WlTraIb_IaJg", "UCZ4AMrDcNrfy3X6nsU8-rPg", "UCMIqrmh2lMdzhlCPK5ahsAg", "UCc-0YpRpqgA5lPTpSQ5uo-Q", "UCcUf33cEPky2GiWBgOP-jQA", "UCt3JiNkefsfbA2N4SgEkoiQ", "UC3xdLFFsqG701QAyGJIPT1g", "UCQV6O5wfETMrWqQ7Ro9r-0g", "UCld68syR8Wi-GY_n4CaoJGA", "UCmFeOdJI3IXgTBDzqBLD8qg", "UCoECpBOAHmQiV7OfV5SxkPA"]
 
-  -- myData0 <- perChannel "UCVls1GmFKf6WlTraIb_IaJg" --distrotube
-  -- myData1 <- perChannel "UCZ4AMrDcNrfy3X6nsU8-rPg" --
-  -- myData2 <- perChannel "UCMIqrmh2lMdzhlCPK5ahsAg" --darknet diaries
-  -- myData3 <- perChannel "UCc-0YpRpqgA5lPTpSQ5uo-Q" --audit the audit
-  -- myData4 <- perChannel "UCcUf33cEPky2GiWBgOP-jQA" --coffeehouse crime
-  -- myData5 <- perChannel "UCt3JiNkefsfbA2N4SgEkoiQ" --
-  -- myData6 <- perChannel "UC3xdLFFsqG701QAyGJIPT1g"
-  -- myData7 <- perChannel "UC2cC48A261pBVKztLyzOAnA"
-  -- myData8 <- perChannel "UCQV6O5wfETMrWqQ7Ro9r-0g"
-  -- myData9 <- perChannel "UCld68syR8Wi-GY_n4CaoJGA"
-
-
   output <- mapM f myDataList
-
 
   Gtk.textBufferSetText textBuffer (pack( concat output)) (-1)
   Gtk.main
